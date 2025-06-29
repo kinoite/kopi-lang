@@ -5,6 +5,8 @@
 ![GitHub License](https://img.shields.io/github/license/kinoite/kopi-lang)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/kinoite/kopi-lang)
 ![GitHub language count](https://img.shields.io/github/languages/count/kinoite/kopi-lang)
+![GitHub repo size](https://img.shields.io/github/repo-size/kinoite/kopi-lang)
+
 
 
 **Kopi** is a fast, modern, and lightweight scripting language built in Rust. It features a clean, simple syntax and is designed to be easy to learn and embed in other applications.
