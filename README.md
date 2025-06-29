@@ -1,5 +1,7 @@
 # Kopi Programming Language
 
+![Untitled5_20250629200314.png]("logo")
+
 **Kopi** is a fast, modern, and lightweight scripting language built in Rust. It features a clean, simple syntax and is designed to be easy to learn and embed in other applications.
 
 ---
