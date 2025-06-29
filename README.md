@@ -47,3 +47,14 @@ sudo mv target/release/kopi /usr/local/bin
 And you are basically just done!- enjoy hacking in Kopi!
 
 ---
+
+## Why Kopi?
+Kopi is designed from the ground up to be a simple, fast, and reliable scripting language that respects the developer's time. It's an ideal choice when you need a blend of performance and ease of use.
+ * Blazing Fast and Safe 
+   * Built in Rust, Kopi's interpreter is designed for performance. It offers memory safety and reliability out of the box, making it a trustworthy choice for any project.
+ * A Joy to Use 
+   * Kopi prioritizes developer happiness. With a clean, modern syntax, a built-in package manager (koshi), and compiler-style error messages that help you find bugs quickly, Kopi is designed to make coding simple and fun.
+ * Embeddable and Extensible 
+   * Kopi is a perfect scripting layer for larger applications. Because it's built in Rust, it can be easily embedded into game engines, tools, and other software to provide a safe and fast scripting environment for plugins or user-defined logic.
+ * Simple by Design 
+   * Kopi avoids unnecessary complexity. It has a small set of core features that are easy to learn, making it a great language for beginners, scripting, and anyone who wants to get things done without getting lost in boilerplate.
