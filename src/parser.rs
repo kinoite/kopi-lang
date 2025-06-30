@@ -1,5 +1,3 @@
-// src/parser.rs
-
 use crate::lexer::{Token, TokenType, Span};
 
 #[derive(Debug, PartialEq, Clone)]
@@ -16,6 +14,9 @@ pub enum ExpressionKind {
     Unary { operator: Token, right: Box<Expression> },
     Infix { left: Box<Expression>, operator: Token, right: Box<Expression> },
     FunctionCall { name: Box<Expression>, args: Vec<Expression> },
+    ArrayLiteral { elements: Vec<Expression> },
+    Index { left: Box<Expression>, index: Box<Expression> },
+    PropertyAccess { object: Box<Expression>, property: Token },
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -38,6 +39,7 @@ pub enum StatementKind {
     While { condition: Expression, body: Vec<Statement> },
     FunctionDeclaration { name: Token, params: Vec<Token>, body: Vec<Statement> },
     Return { keyword: Token, value: Option<Expression> },
+    Import { module_name: Token },
     ExpressionStatement(Expression),
 }
 
@@ -71,13 +73,15 @@ impl<'a> Parser<'a> {
     }
 
     fn advance(&mut self) {
-        if self.position < self.tokens.len() - 1 { self.position += 1; }
+        if self.position < self.tokens.len() - 1 {
+            self.position += 1;
+        }
     }
     
     fn synchronize(&mut self) {
         self.advance();
         while self.peek() != &TokenType::Eof {
-            if matches!(self.peek(), TokenType::Let | TokenType::Fun | TokenType::If | TokenType::While | TokenType::Return) {
+            if matches!(self.peek(), TokenType::Let | TokenType::Fun | TokenType::If | TokenType::While | TokenType::Return | TokenType::Import) {
                 return;
             }
             self.advance();
@@ -91,6 +95,7 @@ impl<'a> Parser<'a> {
             TokenType::If => self.parse_if_statement(),
             TokenType::While => self.parse_while_statement(),
             TokenType::Return => self.parse_return_statement(),
+            TokenType::Import => self.parse_import_statement(),
             _ => {
                 let expr = self.parse_expression()?;
                 let span = expr.span.clone();
@@ -102,6 +107,19 @@ impl<'a> Parser<'a> {
             self.synchronize();
         }
         result
+    }
+    
+    fn parse_import_statement(&mut self) -> Option<Statement> {
+        let keyword = self.current().clone();
+        self.advance();
+        let module_name = self.current().clone();
+        if !matches!(self.peek(), TokenType::Identifier(_)) {
+            self.errors.push(("Expected module name after 'import'.".to_string(), self.current().span.clone()));
+            return None;
+        }
+        self.advance();
+        let span = keyword.span.start..module_name.span.end;
+        Some(Statement { kind: StatementKind::Import { module_name }, span })
     }
 
     fn parse_let_statement(&mut self) -> Option<Statement> {
@@ -124,21 +142,6 @@ impl<'a> Parser<'a> {
         let value = self.parse_expression()?;
         let span = let_token.span.start..value.span.end;
         Some(Statement { kind: StatementKind::Let { name: name_token, value }, span })
-    }
-    
-    fn parse_block(&mut self) -> Option<Vec<Statement>> {
-        let mut statements = Vec::new();
-        while self.peek() != &TokenType::RBrace && self.peek() != &TokenType::Eof {
-            if let Some(stmt) = self.parse_statement() {
-                statements.push(stmt);
-            }
-        }
-        if self.peek() != &TokenType::RBrace {
-            self.errors.push(("Expected '}' to close block.".to_string(), self.current().span.clone()));
-            return None;
-        }
-        self.advance();
-        Some(statements)
     }
 
     fn parse_if_statement(&mut self) -> Option<Statement> {
@@ -194,18 +197,18 @@ impl<'a> Parser<'a> {
         }
         self.advance();
         let mut params = Vec::new();
-        while self.peek() != &TokenType::RParen {
-            if !matches!(self.peek(), TokenType::Identifier(_)) {
-                self.errors.push(("Expected parameter name.".to_string(), self.current().span.clone()));
-                break;
-            }
-            params.push(self.current().clone());
-            self.advance();
-            if self.peek() == &TokenType::Comma {
+        if self.peek() != &TokenType::RParen {
+            loop {
+                if !matches!(self.peek(), TokenType::Identifier(_)) {
+                    self.errors.push(("Expected parameter name.".to_string(), self.current().span.clone()));
+                    break;
+                }
+                params.push(self.current().clone());
                 self.advance();
-            } else if self.peek() != &TokenType::RParen {
-                self.errors.push(("Expected ',' or ')' after parameter.".to_string(), self.current().span.clone()));
-                break;
+                if self.peek() != &TokenType::Comma {
+                    break;
+                }
+                self.advance();
             }
         }
         if self.peek() != &TokenType::RParen {
@@ -232,6 +235,21 @@ impl<'a> Parser<'a> {
         }
         let span = keyword.span.start..self.current().span.end;
         Some(Statement { kind: StatementKind::Return { keyword, value }, span })
+    }
+
+    fn parse_block(&mut self) -> Option<Vec<Statement>> {
+        let mut statements = Vec::new();
+        while self.peek() != &TokenType::RBrace && self.peek() != &TokenType::Eof {
+            if let Some(stmt) = self.parse_statement() {
+                statements.push(stmt);
+            }
+        }
+        if self.peek() != &TokenType::RBrace {
+            self.errors.push(("Expected '}' to close block.".to_string(), self.current().span.clone()));
+            return None;
+        }
+        self.advance();
+        Some(statements)
     }
 
     fn parse_expression(&mut self) -> Option<Expression> {
@@ -337,13 +355,40 @@ impl<'a> Parser<'a> {
             let span = operator.span.start..right.span.end;
             return Some(Expression { kind: ExpressionKind::Unary { operator, right: Box::new(right) }, span });
         }
-        self.parse_call_expression()
+        self.parse_access_expression()
     }
-
-    fn parse_call_expression(&mut self) -> Option<Expression> {
+    
+    fn parse_access_expression(&mut self) -> Option<Expression> {
         let mut expr = self.parse_primary_expression()?;
-        if self.peek() == &TokenType::LParen {
-            expr = self.finish_parsing_call(expr)?;
+        loop {
+            match self.peek() {
+                TokenType::LParen => {
+                    expr = self.finish_parsing_call(expr)?;
+                }
+                TokenType::LBracket => {
+                    self.advance();
+                    let index_expr = self.parse_expression()?;
+                    if self.peek() != &TokenType::RBracket {
+                        self.errors.push(("Expected ']' after index.".to_string(), self.current().span.clone()));
+                        return None;
+                    }
+                    let span = expr.span.start..self.current().span.end;
+                    self.advance();
+                    expr = Expression { kind: ExpressionKind::Index { left: Box::new(expr), index: Box::new(index_expr) }, span };
+                }
+                TokenType::Dot => {
+                    self.advance();
+                    let property = self.current().clone();
+                    if !matches!(self.peek(), TokenType::Identifier(_)) {
+                        self.errors.push(("Expected property name after '.'.".to_string(), self.current().span.clone()));
+                        return None;
+                    }
+                    self.advance();
+                    let span = expr.span.start..property.span.end;
+                    expr = Expression { kind: ExpressionKind::PropertyAccess { object: Box::new(expr), property }, span };
+                }
+                _ => break,
+            }
         }
         Some(expr)
     }
@@ -353,6 +398,10 @@ impl<'a> Parser<'a> {
         let mut args = Vec::new();
         if self.peek() != &TokenType::RParen {
             args.push(self.parse_expression()?);
+            while self.peek() == &TokenType::Comma {
+                self.advance();
+                args.push(self.parse_expression()?);
+            }
         }
         if self.peek() != &TokenType::RParen {
             self.errors.push(("Expected ')' after function arguments.".to_string(), self.current().span.clone()));
@@ -364,6 +413,21 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_primary_expression(&mut self) -> Option<Expression> {
+        if self.peek() == &TokenType::LBracket {
+            return self.parse_array_literal();
+        }
+        
+        if self.peek() == &TokenType::LParen {
+            self.advance();
+            let expr = self.parse_expression();
+            if self.peek() != &TokenType::RParen {
+                self.errors.push(("Expected ')' after expression in parentheses.".to_string(), self.current().span.clone()));
+                return None;
+            }
+            self.advance();
+            return expr;
+        }
+
         let token = self.current().clone();
         let expr = match token.kind {
             TokenType::Identifier(name) => Some(Expression { kind: ExpressionKind::Variable(name), span: token.span }),
@@ -378,5 +442,32 @@ impl<'a> Parser<'a> {
         };
         self.advance();
         expr
+    }
+    
+    fn parse_array_literal(&mut self) -> Option<Expression> {
+        let start_token = self.current().clone();
+        self.advance();
+        let mut elements = Vec::new();
+        if self.peek() == &TokenType::RBracket {
+            self.advance();
+            return Some(Expression {
+                kind: ExpressionKind::ArrayLiteral { elements },
+                span: start_token.span.start..self.current().span.end,
+            });
+        }
+        elements.push(self.parse_expression()?);
+        while self.peek() == &TokenType::Comma {
+            self.advance();
+            elements.push(self.parse_expression()?);
+        }
+        if self.peek() != &TokenType::RBracket {
+            self.errors.push(("Expected ']' after array elements.".to_string(), self.current().span.clone()));
+            return None;
+        }
+        self.advance();
+        Some(Expression {
+            kind: ExpressionKind::ArrayLiteral { elements },
+            span: start_token.span.start..self.current().span.end,
+        })
     }
 }
