@@ -22,6 +22,8 @@
 * **Variable Bindings:** Use `let` to create variables and `=` to reassign them.
 * **Lua-Style Comments:** Supports both single-line (`--`) and block comments (`--[[ ... ]]--`).
 * **Rich Error Messages:** Compiler-style error reporting makes debugging a breeze.
+* **A Standard Library:** Fully-fledged standard library to make Kopi more feature-rich
+* **Arrays:** Rich arrays that start at 0
 
 ---
 
