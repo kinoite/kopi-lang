@@ -5,6 +5,7 @@ use clap::Parser;
 mod lexer;
 mod parser;
 mod interpreter;
+mod stdlib;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -51,7 +52,7 @@ fn main() {
         }
         return;
     }
-    
+
     let mut interpreter = interpreter::Interpreter::new();
     if let Err((msg, span)) = interpreter.run(ast) {
         Report::build(ReportKind::Error, (filename.clone(), span.clone()))
