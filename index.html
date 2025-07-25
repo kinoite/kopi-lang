@@ -5,95 +5,224 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kopi Language - Simple. Powerful. Expressive.</title>
     <meta name="description" content="Discover Kopi, a new programming language designed for simplicity, power, and expressiveness. Start learning today!">
-    <link rel="icon" href="https://github.com/fluidicon.png" type="image/png"> <style>
-        /* Basic Reset & Font */
+    <link rel="icon" href="https://github.com/fluidicon.png" type="image/png">
+
+    <style>
+        :root {
+            --ctp-base: #1e1e2e;
+            --ctp-mantle: #181825;
+            --ctp-crust: #11111b;
+            --ctp-text: #cdd6f4;
+            --ctp-subtext1: #bac2de;
+            --ctp-subtext0: #a6adc8;
+            --ctp-surface0: #313244;
+            --ctp-maroon: #eebebe;
+            --ctp-peach: #fab387;
+            --ctp-lavender: #b4befe;
+            --ctp-blue: #89b4fa;
+            --ctp-green: #a6e3a1;
+            --ctp-red: #f38ba8;
+        }
+
         body {
             margin: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background-color: #f8f8f8;
+            color: var(--ctp-text);
+            background-color: var(--ctp-mantle);
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh; /* Ensures content is centered vertically */
-            padding: 20px; /* Add some padding on smaller screens */
-            box-sizing: border-box; /* Include padding in element's total width and height */
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
-        /* Container for content */
         .container {
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            max-width: 800px;
-            text-align: center;
+            background-color: var(--ctp-base);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            padding: 50px;
+            max-width: 900px;
             width: 100%;
+            text-align: center;
+            border: 1px solid var(--ctp-surface0);
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
         }
 
-        /* Header Styles */
         h1 {
-            color: #2c3e50; /* Dark blue-grey */
-            font-size: 3em;
+            color: var(--ctp-maroon);
+            font-size: 3.5em;
             margin-bottom: 10px;
+            letter-spacing: -1px;
         }
 
         h1 span {
-            color: #007bff; /* Bright blue for emphasis */
+            color: var(--ctp-peach);
         }
 
         p.slogan {
-            font-size: 1.2em;
-            color: #555;
+            font-size: 1.4em;
+            color: var(--ctp-subtext1);
             margin-top: 0;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
 
-        /* Paragraphs */
+        h2 {
+            color: var(--ctp-maroon);
+            font-size: 2.2em;
+            margin-top: 40px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--ctp-surface0);
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+
         p {
             font-size: 1.1em;
             margin-bottom: 20px;
+            color: var(--ctp-text);
         }
 
-        /* Call to Action Button */
+        .code-example {
+            text-align: left;
+            margin: 30px auto;
+            max-width: 600px;
+        }
+
+        pre {
+            background-color: var(--ctp-crust);
+            color: var(--ctp-green);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', 'Cascadia Code', 'Consolas', 'Monaco', monospace;
+            font-size: 1em;
+            line-height: 1.5;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        code {
+            display: block;
+        }
+
+        .features-list {
+            text-align: left;
+            margin: 30px auto;
+            max-width: 600px;
+        }
+
+        .features-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features-list li {
+            background-color: var(--ctp-surface0);
+            margin-bottom: 15px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: flex-start;
+            font-size: 1.05em;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .features-list li::before {
+            content: '✨';
+            margin-right: 15px;
+            font-size: 1.3em;
+            color: var(--ctp-peach);
+            flex-shrink: 0;
+            line-height: 1.2;
+        }
+
         .cta-button {
             display: inline-block;
-            background-color: #007bff; /* Bright blue */
-            color: white;
-            padding: 15px 30px;
+            background-color: var(--ctp-peach);
+            color: var(--ctp-base);
+            padding: 18px 35px;
             text-decoration: none;
-            border-radius: 5px;
-            font-size: 1.2em;
+            border-radius: 8px;
+            font-size: 1.4em;
             font-weight: bold;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 5px 15px rgba(250, 179, 135, 0.4);
+            border: none;
+            cursor: pointer;
         }
 
         .cta-button:hover {
-            background-color: #0056b3; /* Darker blue on hover */
-            transform: translateY(-2px); /* Slight lift effect */
+            background-color: var(--ctp-maroon);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(238, 190, 190, 0.5);
         }
 
         .cta-button:active {
             transform: translateY(0);
-            box-shadow: 0 1px 3px rgba(0, 123, 255, 0.3);
+            box-shadow: 0 2px 5px rgba(250, 179, 135, 0.3);
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
+        .footer-text {
+            margin-top: 50px;
+            font-size: 0.9em;
+            color: var(--ctp-subtext0);
+            border-top: 1px solid var(--ctp-surface0);
+            padding-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px;
+            }
             h1 {
-                font-size: 2.5em;
+                font-size: 2.8em;
+            }
+            p.slogan {
+                font-size: 1.1em;
+            }
+            h2 {
+                font-size: 1.8em;
+            }
+            .cta-button {
+                padding: 15px 30px;
+                font-size: 1.2em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                border-radius: 8px;
+            }
+            h1 {
+                font-size: 2.2em;
             }
             p.slogan {
                 font-size: 1em;
+                margin-bottom: 25px;
             }
-            .container {
-                padding: 25px;
+            h2 {
+                font-size: 1.6em;
+                margin-top: 30px;
+                margin-bottom: 20px;
+            }
+            p {
+                font-size: 1em;
             }
             .cta-button {
                 padding: 12px 25px;
-                font-size: 1em;
+                font-size: 1.1em;
+            }
+            pre {
+                padding: 15px;
+                font-size: 0.9em;
+            }
+            .features-list li {
+                font-size: 0.95em;
+                padding: 12px 15px;
             }
         }
     </style>
@@ -101,7 +230,7 @@
 <body>
     <div class="container">
         <h1>Welcome to <span>Kopi</span> Language</h1>
-        <p class="slogan">Simple. Powerful. Expressive.</p>
+        <p class="slogan">Simple. Powerful. Expressive. Built for the modern developer.</p>
 
         <p>
             Kopi is a new programming language designed with clarity and efficiency in mind.
@@ -114,15 +243,51 @@
             new programming paradigms, Kopi provides a robust foundation.
         </p>
 
+        <h2>Code Example</h2>
+        <div class="code-example">
+            <pre><code>
+func main() {
+    print("Hello, Kopi World!")
+
+    let result = add(5, 3)
+    print("The sum is: " + result)
+}
+
+func add(a: int, b: int) -> int {
+    return a + b
+}
+
+struct Point {
+    x: float,
+    y: float
+}
+
+let p = Point{x: 10.5, y: 20.0}
+print("Point coordinates: " + p.x + ", " + p.y)
+            </code></pre>
+        </div>
+
+        <h2>Key Features</h2>
+        <div class="features-list">
+            <ul>
+                <li>Clear and concise syntax, making code easy to read and write.</li>
+                <li>Strong, but flexible type system, catching errors early.</li>
+                <li>Designed for performance, with compilation to native code.</li>
+                <li>Modern concurrency features for parallel execution.</li>
+                <li>Cross-platform compatibility across various operating systems.</li>
+                <li>Rich standard library to accelerate development.</li>
+                <li>Active community and comprehensive documentation (on our Wiki!).</li>
+            </ul>
+        </div>
+
         <a href="https://github.com/kinoite/kopi-lang/wiki" target="_blank" class="cta-button">
-            Start Learning Kopi
+            Start Learning Kopi Today!
         </a>
 
-        <p style="margin-top: 40px; font-size: 0.9em; color: #777;">
-            Explore the full documentation and examples on our GitHub Wiki.
+        <p class="footer-text">
+            Explore the full documentation, detailed examples, and contribution guidelines on our GitHub Wiki.
+            Join our community and help shape the future of Kopi!
         </p>
     </div>
 </body>
 </html>
-
-/* note that ai made this html file as a placeholder, im currently making my own html, this is only a placeholder. */
